@@ -242,10 +242,22 @@ def calculate_macs(model: onnx.ModelProto,csv_file_name):
         Input_feature_w = input_shape[3]
 
         # output shape
-        Output_feature_n = output_shape[0]
-        Output_feature_c = output_shape[1]
-        Output_feature_h = output_shape[2]
-        Output_feature_w = output_shape[3]
+        if output_shape.size == 4:
+            Output_feature_n = output_shape[0]
+            Output_feature_c = output_shape[1]
+            Output_feature_h = output_shape[2]
+            Output_feature_w = output_shape[3]
+        elif output_shape.size == 3:
+            Output_feature_n = output_shape[0]
+            Output_feature_c = output_shape[1]
+            Output_feature_h = output_shape[2]
+            Output_feature_w = 0
+        else:
+            Output_feature_n = output_shape[0]
+            Output_feature_c = output_shape[1]
+            Output_feature_h = 0
+            Output_feature_w = 0
+
         
         No_flops = 0
         Input_size = np.prod(input_shape)
@@ -296,7 +308,10 @@ def calculate_macs(model: onnx.ModelProto,csv_file_name):
         f_csv.writerow(csv_header)
         for node in onnx_nodes:
             #print(node.output[0])
-            node_output_shape = node_name_dict[node.output[0]]
+            if node.output[0] in node_name_dict:
+                node_output_shape = node_name_dict[node.output[0]]
+            else:
+                print(node.output[0],'not in node name list')
 
             if len(node.input) > 0:
                 node_input_shape = node_name_dict[node.input[0]]
